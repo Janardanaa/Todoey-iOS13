@@ -9,13 +9,15 @@
 import UIKit
 
 class ToDoListViewController: UITableViewController {
-
+    
     let listArray = ["Jack", "Queen", "King"]
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
     }
+    //MARK: - UITableViewDataSource
+    
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return listArray.count
@@ -27,6 +29,29 @@ class ToDoListViewController: UITableViewController {
         cell.textLabel?.text = listArray[indexPath.row]
         return cell
     }
-
+    //MARK: - UITableViewDelegate
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        
+        
+        tableView.deselectRow(at: indexPath, animated: true)
+        
+        if tableView.cellForRow(at: indexPath)?.accessoryType == .checkmark {
+            tableView.cellForRow(at: indexPath)?.accessoryType = .none
+        } else {
+            tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
+        }
+        
+    }
+    
+    //MARK: - Add new items
+    
+    @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
+    }
+    
 }
+
+
+
+
+
 
