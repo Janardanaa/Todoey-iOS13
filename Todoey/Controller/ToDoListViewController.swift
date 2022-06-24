@@ -13,25 +13,12 @@ class ToDoListViewController: UITableViewController {
     var listArray = [Item]()
     let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
     
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        print(dataFilePath!)
         
-        
-        let newItem = Item()
-        newItem.title = "Learn Programming"
-        listArray.append(newItem)
-        
-        let newItem2 = Item()
-        newItem2.title = "Read a Book"
-        listArray.append(newItem2)
-        
-        let newItem3 = Item()
-        newItem3.title = "Record a Video"
-        listArray.append(newItem3)
-        
-        //        if let items = defaults.array(forKey: "TodoListArray") as? [Item] {
-        //            listArray = items }
-    
+        loadData()
     }
     
     
@@ -56,9 +43,9 @@ class ToDoListViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
         listArray[indexPath.row].task = !listArray[indexPath.row].task
-        tableView.reloadData()
-        tableView.deselectRow(at: indexPath, animated: true)
         
+        tableView.deselectRow(at: indexPath, animated: true)
+        saveItems()
     }
     
     //MARK: - Add new items
@@ -71,17 +58,7 @@ class ToDoListViewController: UITableViewController {
             let newItem = Item()
             newItem.title = textField.text!
             self.listArray.append(newItem)
-            
-            let encoder = PropertyListEncoder()
-            do {
-                let data = try encoder.encode(self.listArray)
-                try data.write(to: self.dataFilePath!)
-            } catch {
-                print(error)
-            }
-            
-            
-            self.tableView.reloadData()
+            self.saveItems()
         }
         alert.addTextField { alertTextField in
             alertTextField.placeholder = "Add new activity"
@@ -92,6 +69,30 @@ class ToDoListViewController: UITableViewController {
         present(alert, animated: true, completion: nil)
     }
     
+    //MARK: - Model Manipulation Data
+    
+    func saveItems() {
+        let encoder = PropertyListEncoder()
+        do {
+            let data = try encoder.encode(listArray)
+            try data.write(to: dataFilePath!)
+        } catch {
+            print(error)
+        }
+        tableView.reloadData()
+        
+    }
+    
+    func loadData() {
+        if let data = try? Data(contentsOf: dataFilePath!) {
+            let decoder = PropertyListDecoder()
+            do {
+                listArray = try decoder.decode([Item].self, from: data)
+            } catch {
+                print(error)
+            }
+        }
+    }
 }
 
 
