@@ -7,24 +7,22 @@
 //
 
 import UIKit
+import CoreData
 
 class ToDoListViewController: UITableViewController {
     
     var listArray = [Item]()
-    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
+    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        print(dataFilePath!)
-        
+        //        print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
         loadData()
     }
     
     
     //MARK: - UITableViewDataSource
-    
-    
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return listArray.count
     }
@@ -55,9 +53,13 @@ class ToDoListViewController: UITableViewController {
         let alert = UIAlertController(title: "Add Activity", message: "", preferredStyle: .alert)
         
         let action = UIAlertAction(title: "Add", style: .default) { action in
-            let newItem = Item()
+            
+            let newItem = Item(context: self.context)
             newItem.title = textField.text!
+            newItem.task = false
+            
             self.listArray.append(newItem)
+            
             self.saveItems()
         }
         alert.addTextField { alertTextField in
@@ -72,27 +74,23 @@ class ToDoListViewController: UITableViewController {
     //MARK: - Model Manipulation Data
     
     func saveItems() {
-        let encoder = PropertyListEncoder()
-        do {
-            let data = try encoder.encode(listArray)
-            try data.write(to: dataFilePath!)
-        } catch {
-            print(error)
-        }
-        tableView.reloadData()
         
+        do {
+            try context.save()
+        } catch {
+            print("error saving context \(error)")
+        }
+        self.tableView.reloadData()
     }
     
-    func loadData() {
-        if let data = try? Data(contentsOf: dataFilePath!) {
-            let decoder = PropertyListDecoder()
+        func loadData() {
+            let request: NSFetchRequest<Item> = Item.fetchRequest()
             do {
-                listArray = try decoder.decode([Item].self, from: data)
+               listArray =  try context.fetch(request)
             } catch {
-                print(error)
+                print("Error fetching data from context \(error)")
             }
         }
-    }
 }
 
 
